@@ -1,0 +1,241 @@
+
+/* ================= MAIN LAYOUT ================= */
+.home {
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.username {
+  font-weight: 600;
+  color: #374151;
+}
+
+.role {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* ================= PROFILE BUTTON ================= */
+.profile-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #e5e7eb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+
+/* ================= HERO ================= */
+.hero {
+  background: #e5e7eb;
+  padding: 80px 5%;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #1f2937;
+}
+
+.search-box {
+  display: flex;
+  max-width: 700px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+.search-box input {
+  flex: 1;
+  padding: 1.2rem 1.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+}
+
+.search-box button {
+  padding: 0 2rem;
+  border: none;
+  background: #1f2937;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-error {
+  margin-top: 10px;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* ================= RECOMMENDED ================= */
+.recommended {
+  background: #ffffff;
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+}
+
+.subtitle {
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 10px; 
+  margin-bottom: 2rem; 
+}
+
+/* ================= GRID ================= */
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.student-card {
+  background: #f9fafb;
+  padding: 3rem 1.5rem;
+  border-radius: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.student-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+  background: #ffffff;
+}
+
+.avatar {
+  width: 110px;
+  height: 110px;
+  background: #d1d5db;
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+}
+
+.student-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.student-course {
+  color: #4b5563;
+}
+
+.student-skills {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ================= ERROR SCREEN ================= */
+.error-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f9fafb;
+  text-align: center;
+}
+
+.error-screen h2 {
+  color: #111827;
+}
+
+.error-screen p {
+  color: #374151;
+}
+
+.error-screen button {
+  margin-top: 20px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.error-screen button:hover {
+  background: #1d4ed8;
+}
+.profile-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #2563eb;
+}
+
+.profile-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bookmark-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  transition: transform 0.2s ease;
+  color: black
+}
+
+.bookmark-link:hover {
+  transform: scale(1.15);
+}
+.bookings-btn {
+  background: white;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.bookings-btn:hover {
+  background: #2563eb;
+  color: white;
+}

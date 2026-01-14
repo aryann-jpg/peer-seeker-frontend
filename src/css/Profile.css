@@ -1,0 +1,233 @@
+/* ================= PAGE ================= */
+.profile-page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ================= NAVBAR ================= */
+.profile-navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 500px;
+  padding: 1rem 0;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  color: #dc2626;
+}
+
+/* ================= BACK BUTTON ================= */
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.back-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* ================= PROFILE CARD ================= */
+.profile-card {
+  width: 100%;
+  max-width: 760px;
+  background: #e5e5e5;
+  margin: 60px auto;
+  padding: 45px 35px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+/* ================= AVATAR ================= */
+.profile-avatar {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  border: 6px solid white;
+  background: #9ca3af;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.avatar-upload {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.profile-avatar:hover .avatar-upload {
+  opacity: 1;
+}
+
+/* ================= TEXT ================= */
+.profile-card h2 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.profile-email {
+  font-size: 1rem;
+  color: #4b5563;
+  margin-bottom: 30px;
+}
+
+/* ================= DETAILS ================= */
+.profile-details {
+  text-align: left;
+  max-width: 560px;
+  margin: 0 auto 30px;
+}
+
+.profile-details table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.profile-details th {
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #6b7280;
+  width: 35%;
+  padding-bottom: 12px;
+}
+
+.profile-details td {
+  font-size: 1rem;
+  color: #374151;
+  padding-bottom: 12px;
+}
+
+/* ================= EDIT MODE ================= */
+.profile-card input,
+.profile-card textarea {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto 14px;
+  padding: 14px;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+}
+
+.profile-card textarea {
+  resize: none;
+  height: 100px;
+}
+
+/* ================= BUTTONS ================= */
+.edit-btn {
+  margin-top: 20px;
+  padding: 12px 34px;
+  border-radius: 10px;
+  border: none;
+  background: #111827;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #1f2937;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.profile-actions button {
+  padding: 12px 22px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.profile-actions button:first-child {
+  background: #2563eb;
+  color: white;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+}
+
+/* ================= STATES ================= */
+.profile-error {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.profile-loading {
+  padding: 80px;
+  font-weight: 600;
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 640px) {
+  .profile-card {
+    padding: 30px 20px;
+  }
+
+  .profile-avatar {
+    width: 130px;
+    height: 130px;
+  }
+
+  .profile-card h2 {
+    font-size: 1.9rem;
+  }
+}
