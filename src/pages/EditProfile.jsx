@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 
 const EditProfile = () => {
   const [form, setForm] = useState(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    axios.get("/profile/me", {
+    api.get("/profile/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -22,7 +22,7 @@ const EditProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await axios.put(
+    await api.put(
       "/profile/me",
       form,
       {

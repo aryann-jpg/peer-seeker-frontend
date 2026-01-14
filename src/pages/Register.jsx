@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api";
 import { useNavigate } from "react-router";
 import "../css/Register.css";
 
@@ -34,7 +34,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post("/auth/register", {
+      await api.post("/auth/register", {
         name: form.name,
         email: form.email,
         password: form.password,

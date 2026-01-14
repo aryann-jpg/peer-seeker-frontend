@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 import { useNavigate } from "react-router";
 import "../css/Bookmarks.css";
 
@@ -16,9 +16,7 @@ const Bookmarks = () => {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await axios.get("/bookmarks", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get("/bookmarks");
         setTutors(res.data);
       } catch (err) {
         console.error("Failed to fetch bookmarks");
@@ -35,11 +33,11 @@ const removeBookmark = async (id) => {
 
   if (!confirmed) return;
 
-  await axios.post(
+  await api.post(`/bookmarks/${id}`);
     `/bookmarks/${id}`,
     {},
     { headers: { Authorization: `Bearer ${token}` } }
-  );
+  
 
   setTutors((prev) => prev.filter((t) => t._id !== id));
 };

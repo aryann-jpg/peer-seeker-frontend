@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 import { useNavigate } from "react-router";
 import "../css/Profile.css";
 
@@ -21,12 +21,7 @@ const Profile = () => {
 
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(
-          "/profile/me",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await api.get("/profile/me");
 
         setUser(res.data);
         setForm(res.data);
@@ -84,7 +79,7 @@ const Profile = () => {
             : form.skills;
       }
 
-      const res = await axios.put(
+      const res = await api.put(
         "/profile/me",
         payload,
         {

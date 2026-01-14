@@ -1,9 +1,16 @@
-
 import axios from "axios";
 
-const token = localStorage.getItem("token");
-
-export const api = axios.create({
-  baseURL: "/", 
-  headers: { Authorization: `Bearer ${token}` },
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
 });
+
+// attach token dynamically (important)
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;

@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router";
+import api from "../api"; 
 import "../css/Bookings.css";
-
 
 const Bookings = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/login");
       return;
@@ -17,33 +17,31 @@ const Bookings = () => {
 
     const fetchBookings = async () => {
       try {
-        const res = await axios.get(
-          "/bookings/my",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await api.get("/bookings/my"); 
         setBookings(res.data);
-      } catch {
+      } catch (err) {
+        console.error(err);
         alert("Failed to load bookings");
       }
     };
 
     fetchBookings();
-  }, [navigate, token]);
+  }, [navigate]);
 
   const deleteBooking = async (id) => {
-    const confirm = window.confirm(
+    const confirmDelete = window.confirm(
       "Are you sure you want to cancel this booking?"
     );
 
-    if (!confirm) return;
+    if (!confirmDelete) return;
 
-    await axios.delete(`/bookings/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    setBookings((prev) => prev.filter((b) => b._id !== id));
+    try {
+      await api.delete(`/bookings/${id}`); 
+      setBookings((prev) => prev.filter((b) => b._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to cancel booking");
+    }
   };
 
   return (
@@ -52,7 +50,7 @@ const Bookings = () => {
         <button onClick={() => navigate("/")} className="back-btn">
           ← Back
         </button>
-        <h1> My Bookings</h1>
+        <h1>My Bookings</h1>
       </div>
 
       {bookings.length === 0 && (

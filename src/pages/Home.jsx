@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 import "../css/Home.css";
 import { useNavigate } from "react-router";
 
@@ -24,7 +24,7 @@ const Home = () => {
   useEffect(() => {
     const fetchTutors = async () => {
       try {
-        const res = await axios.get("/tutors");
+        const res = await api.get("/tutors");
 
         if (!Array.isArray(res.data)) {
           throw new Error("Invalid data format from server");

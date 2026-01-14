@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import axios from "axios";
+import api from "../api";
 import "../css/TutorProfile.css";
 
 const TutorProfile = () => {
@@ -20,7 +20,7 @@ const TutorProfile = () => {
 
   /* ================= FETCH TUTOR ================= */
   useEffect(() => {
-    axios
+    api
       .get(`/students/${id}`)
       .then((res) => {
         setTutor(res.data);
@@ -33,7 +33,7 @@ const TutorProfile = () => {
   const handleBookmark = async () => {
     if (!token) return navigate("/login");
 
-    await axios.post(
+    await api.post(
       `/bookmarks/${tutor._id}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
@@ -47,7 +47,7 @@ const TutorProfile = () => {
     if (!date) return alert("Please select a date and time");
 
     try {
-      await axios.post(
+      await api.post(
         "/bookings",
         {
           tutorId: tutor._id,
