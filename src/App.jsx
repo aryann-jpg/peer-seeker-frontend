@@ -5,7 +5,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import EditProfile from './pages/EditProfile.jsx';
-import Profile from './pages/profile.jsx';
+import Profile from './pages/Profile.jsx';
 import Bookmarks from './pages/Bookmarks.jsx';
 import Bookings from './pages/Bookings.jsx';
 import './App.css';
