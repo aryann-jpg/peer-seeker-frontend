@@ -17,7 +17,7 @@ const Bookings = () => {
 
     const fetchBookings = async () => {
       try {
-        const res = await api.get("/bookings/my"); 
+        const res = await api.get("/bookings/my", bookingsRouter); 
         setBookings(res.data);
       } catch (err) {
         console.error(err);
@@ -36,7 +36,7 @@ const Bookings = () => {
     if (!confirmDelete) return;
 
     try {
-      await api.delete(`/bookings/${id}`); 
+      await api.delete(`/bookings/${id}`, bookingsRouter); 
       setBookings((prev) => prev.filter((b) => b._id !== id));
     } catch (err) {
       console.error(err);
