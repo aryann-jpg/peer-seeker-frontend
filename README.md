@@ -1,16 +1,53 @@
-# React + Vite
+# Peer Seeker – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This repository contains the frontend of the Peer Seeker web application.  
+The frontend provides the user interface and communicates with the backend API to handle authentication, bookings, and bookmarks.
 
-Currently, two official plugins are available:
+The project is deployed using DevOps and GitOps principles with an automated CI/CD pipeline.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Tech Stack
+- React (Vite)
+- JavaScript
+- HTML
+- CSS
+- Axios
+- GitHub Actions
+- Vercel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## CI/CD Pipeline (GitOps)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+This project uses GitHub Actions to implement a continuous integration pipeline.
+
+### Trigger
+- Any push to the `main` branch
+
+### Pipeline Steps
+1. Checkout source code
+2. Install Node.js dependencies
+3. Build the frontend application
+
+The pipeline ensures the project builds successfully before deployment.
+
+---
+
+## Deployment Architecture
+
+- Cloud Platform: **Vercel**
+- Deployment Type: **Automatic**
+- Hosting: Frontend static build
+
+Once changes are pushed to the `main` branch, Vercel automatically deploys the latest version.
+
+---
+
+## Environment Variables
+Frontend environment variables are managed securely in Vercel.
+
+Example:
+```env
+VITE_API_BASE_URL=https://peer-seeker-backend.onrender.com
