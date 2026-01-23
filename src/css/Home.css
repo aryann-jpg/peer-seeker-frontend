@@ -239,3 +239,25 @@
   background: #2563eb;
   color: white;
 }
+/* ================= FILTER BUTTON ================= */
+.filter-btn {
+  margin-top: 20px;
+  padding: 10px 18px;
+  background: white;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: #2563eb;
+  color: white;
+}
+
+.filter-btn.active {
+  background: #2563eb;
+  color: white;
+}
