@@ -2,7 +2,6 @@
   min-height: 100vh;
   background: #f3f4f6;
   padding: 50px 30px;
-
 }
 
 .booking-header {
@@ -41,44 +40,94 @@
   padding: 24px;
   border-radius: 18px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+   color:#111827
 }
 
 .booking-card h3 {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #111827;
+  margin-bottom: 4px;
 }
 
-.booking-card p {
-  margin-top: 6px;
-  color: #374151;
+.tutor-course {
+  color: #6b7280;
+  margin-bottom: 15px;
+   color:#111827
 }
 
 .booking-card .message {
   background: #f9fafb;
-  padding: 10px;
+  padding: 12px;
   border-radius: 10px;
   margin-top: 10px;
+   color:#111827
+}
+
+/* BUTTONS */
+.edit-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid #2563eb;
+  background: white;
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 10px;
 }
 
 .booking-card .cancel {
-  margin-top: 16px;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   border-radius: 10px;
   border: none;
   background: #fee2e2;
   color: #991b1b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* EDIT FORM STYLES */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.edit-form input, .edit-form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-family: inherit;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.save-btn {
+  flex: 1;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.booking-card .cancel:hover {
-  background: #fecaca;
-}
-
-.empty {
-  text-align: center;
-  margin-top: 60px;
-  color: #6b7280;
+.cancel-edit-btn {
+  flex: 1;
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }
