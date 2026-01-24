@@ -6,18 +6,22 @@ import { useNavigate } from "react-router";
 const MAX_SEARCH_LENGTH = 30;
 
 const Home = () => {
-  const [tutors, setTutors] = useState([]);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchError, setSearchError] = useState("");
-  const [filterByHelpNeeded, setFilterByHelpNeeded] = useState(false);
+  const [filterByMatch, setFilterByMatch] = useState(false);
 
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const helpNeeded = (user?.helpNeeded || []).map((h) =>
-    h.toLowerCase()
+  const role = user?.role || "student";
+  const isTutor = role === "tutor";
+
+  // Student → helpNeeded, Tutor → skills
+  const mySubjects = (isTutor ? user?.skills : user?.helpNeeded || []).map(
+    (s) => s.toLowerCase()
   );
 
   /* ================= AUTH CHECK ================= */
@@ -26,48 +30,51 @@ const Home = () => {
     if (!token) navigate("/login");
   }, [navigate]);
 
-  /* ================= FETCH TUTORS ================= */
+  /* ================= FETCH USERS ================= */
   useEffect(() => {
-    const fetchTutors = async () => {
+    const fetchUsers = async () => {
       try {
-        const res = await api.get("/tutors");
+        const endpoint = isTutor ? "/students" : "/tutors";
+        const res = await api.get(endpoint);
 
         if (!Array.isArray(res.data)) {
           throw new Error("Invalid data format from server");
         }
 
-        setTutors(res.data);
+        setPeople(res.data);
       } catch (err) {
         console.error("API ERROR:", err);
         setError(
           err.response?.data?.message ||
-            "Unable to fetch tutors. Please try again."
+            "Unable to fetch users. Please try again."
         );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTutors();
-  }, []);
+    fetchUsers();
+  }, [isTutor]);
 
   /* ================= FILTER LOGIC ================= */
   const trimmedTerm = searchTerm.trim().toLowerCase();
 
-  const filteredTutors = tutors.filter((tutor) => {
-    const skills = (tutor.skills || []).map((s) => s.toLowerCase());
+  const filteredPeople = people.filter((person) => {
+    const subjects = (
+      isTutor ? person.helpNeeded : person.skills || []
+    ).map((s) => s.toLowerCase());
 
     const matchesSearch =
       !trimmedTerm ||
-      tutor.name?.toLowerCase().includes(trimmedTerm) ||
-      tutor.course?.toLowerCase().includes(trimmedTerm) ||
-      skills.some((skill) => skill.includes(trimmedTerm));
+      person.name?.toLowerCase().includes(trimmedTerm) ||
+      person.course?.toLowerCase().includes(trimmedTerm) ||
+      subjects.some((s) => s.includes(trimmedTerm));
 
-    if (!filterByHelpNeeded) return matchesSearch;
+    if (!filterByMatch) return matchesSearch;
 
     return (
       matchesSearch &&
-      skills.some((skill) => helpNeeded.includes(skill))
+      subjects.some((s) => mySubjects.includes(s))
     );
   });
 
@@ -81,7 +88,11 @@ const Home = () => {
   };
 
   if (loading) {
-    return <h2 style={{ padding: "40px" }}>Loading tutors...</h2>;
+    return (
+      <h2 style={{ padding: "40px" }}>
+        Loading {isTutor ? "students" : "tutors"}...
+      </h2>
+    );
   }
 
   if (error) {
@@ -102,7 +113,7 @@ const Home = () => {
 
         <div className="nav-right">
           <div className="welcome-text">
-            Welcome, <strong>{user?.name || "User"}</strong>
+            Welcome, <strong>{user?.name || "User"}</strong> ({role})
           </div>
 
           <button
@@ -137,13 +148,19 @@ const Home = () => {
       {/* ================= HERO ================= */}
       <section className="hero">
         <h1>
-          Inspire hope, ignite <br /> the imagination.
+          {isTutor
+            ? "Empower students, share your knowledge."
+            : "Inspire hope, ignite the imagination."}
         </h1>
 
         <div className="search-box">
           <input
             type="text"
-            placeholder="Search tutors by name, skill, or course"
+            placeholder={
+              isTutor
+                ? "Search students by name, course, or need"
+                : "Search tutors by name, skill, or course"
+            }
             value={searchTerm}
             onChange={(e) => {
               const value = e.target.value;
@@ -169,59 +186,76 @@ const Home = () => {
 
         {searchError && <p className="search-error">{searchError}</p>}
 
-        {/* ===== FILTER BUTTON (WILL SHOW) ===== */}
-        {helpNeeded.length > 0 && (
+        {mySubjects.length > 0 && (
           <button
-            onClick={() => setFilterByHelpNeeded((prev) => !prev)}
+            onClick={() => setFilterByMatch((prev) => !prev)}
             style={{
               marginTop: "20px",
               padding: "10px 16px",
               borderRadius: "6px",
               border: "1px solid #2563eb",
-              background: filterByHelpNeeded ? "#2563eb" : "white",
-              color: filterByHelpNeeded ? "white" : "#2563eb",
+              background: filterByMatch ? "#2563eb" : "white",
+              color: filterByMatch ? "white" : "#2563eb",
               cursor: "pointer",
               fontWeight: "600",
             }}
           >
-            {filterByHelpNeeded
-              ? "Show All Tutors"
+            {filterByMatch
+              ? "Show All"
+              : isTutor
+              ? "Show Students I Can Help"
               : "Show Tutors For My Subjects"}
           </button>
         )}
       </section>
 
-      {/* ================= TUTORS ================= */}
+      {/* ================= LIST ================= */}
       <section className="recommended">
-        <h2>Recommended Tutors</h2>
+        <h2>
+          {isTutor ? "Available Students" : "Recommended Tutors"}
+        </h2>
+
         <p className="subtitle">
-          Connect with our student tutors who can help you learn faster!
+          {isTutor
+            ? "Find students who need help in your skills."
+            : "Find tutors that match what you need help with."}
         </p>
 
         <div className="student-grid">
-          {filteredTutors.length === 0 ? (
-            <p>No tutors match your criteria</p>
+          {filteredPeople.length === 0 ? (
+            <p>No results found</p>
           ) : (
-            filteredTutors.map((tutor) => (
+            filteredPeople.map((person) => (
               <div
                 className="student-card"
-                key={tutor._id}
-                onClick={() => navigate(`/tutor/${tutor._id}`)}
+                key={person._id}
+                onClick={() =>
+                  navigate(
+                    isTutor
+                      ? `/student/${person._id}`
+                      : `/tutor/${person._id}`
+                  )
+                }
               >
                 <div className="avatar"></div>
 
                 <p className="student-name">
-                  {tutor.name || "Unnamed Tutor"}
+                  {person.name || "Unnamed"}
                 </p>
 
                 <p className="student-course">
-                  {tutor.course || "Unknown Course"} — Year{" "}
-                  {tutor.year || "N/A"}
+                  {person.course || "Unknown Course"} — Year{" "}
+                  {person.year || "N/A"}
                 </p>
 
-                {tutor.skills?.length > 0 && (
+                {(isTutor
+                  ? person.helpNeeded
+                  : person.skills)?.length > 0 && (
                   <p className="student-skills">
-                    {tutor.skills.join(", ")}
+                    {(isTutor
+                      ? person.helpNeeded
+                      : person.skills
+                    ).join(", ")}
                   </p>
                 )}
               </div>
