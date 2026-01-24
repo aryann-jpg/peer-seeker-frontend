@@ -3,23 +3,22 @@ import api from "../api";
 import "../css/Home.css";
 import { useNavigate } from "react-router";
 
+const MAX_SEARCH_LENGTH = 30;
+
 const Home = () => {
-  const [people, setPeople] = useState([]);
+  const [tutors, setTutors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterByMatching, setFilterByMatching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [filterByHelpNeeded, setFilterByHelpNeeded] = useState(false);
 
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const userRole = user?.role || "student";
-  const isTutor = userRole === "tutor";
-
-  // ✅ FIXED: correct fields
-  const myInterests = isTutor
-    ? user?.skills || []
-    : user?.helpNeeded || [];
+  const helpNeeded = (user?.helpNeeded || []).map((h) =>
+    h.toLowerCase()
+  );
 
   /* ================= AUTH CHECK ================= */
   useEffect(() => {
@@ -27,56 +26,70 @@ const Home = () => {
     if (!token) navigate("/login");
   }, [navigate]);
 
-  /* ================= FETCH USERS ================= */
+  /* ================= FETCH TUTORS ================= */
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchTutors = async () => {
       try {
-        const endpoint = isTutor ? "/students" : "/tutors";
-        const res = await api.get(endpoint);
-        setPeople(res.data);
+        const res = await api.get("/tutors");
+
+        if (!Array.isArray(res.data)) {
+          throw new Error("Invalid data format from server");
+        }
+
+        setTutors(res.data);
       } catch (err) {
         console.error("API ERROR:", err);
-        setError("Unable to fetch users");
+        setError(
+          err.response?.data?.message ||
+            "Unable to fetch tutors. Please try again."
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
-  }, [isTutor]);
+    fetchTutors();
+  }, []);
 
-  /* ================= FILTER ================= */
-  const filteredList = people.filter((person) => {
-    const subjects = isTutor
-      ? person.helpNeeded || []
-      : person.skills || [];
+  /* ================= FILTER LOGIC ================= */
+  const trimmedTerm = searchTerm.trim().toLowerCase();
 
-    const searchMatch =
-      !searchTerm ||
-      person.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subjects.some((s) =>
-        s.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const filteredTutors = tutors.filter((tutor) => {
+    const skills = (tutor.skills || []).map((s) => s.toLowerCase());
 
-    if (!filterByMatching) return searchMatch;
+    const matchesSearch =
+      !trimmedTerm ||
+      tutor.name?.toLowerCase().includes(trimmedTerm) ||
+      tutor.course?.toLowerCase().includes(trimmedTerm) ||
+      skills.some((skill) => skill.includes(trimmedTerm));
+
+    if (!filterByHelpNeeded) return matchesSearch;
 
     return (
-      searchMatch &&
-      subjects.some((s) =>
-        myInterests.some(
-          (i) => i.toLowerCase() === s.toLowerCase()
-        )
-      )
+      matchesSearch &&
+      skills.some((skill) => helpNeeded.includes(skill))
     );
   });
 
-  if (loading) return <h2 style={{ padding: "40px" }}>Loading...</h2>;
+  /* ================= HANDLERS ================= */
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setSearchError("Search cannot be empty");
+      return;
+    }
+    setSearchError("");
+  };
+
+  if (loading) {
+    return <h2 style={{ padding: "40px" }}>Loading tutors...</h2>;
+  }
 
   if (error) {
     return (
       <div className="error-screen">
-        <h2>Error</h2>
+        <h2>Something went wrong</h2>
         <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
   }
@@ -86,82 +99,131 @@ const Home = () => {
       {/* ================= NAVBAR ================= */}
       <header className="navbar">
         <div className="logo">PeerSeeker</div>
+
         <div className="nav-right">
-          Welcome, <strong>{user?.name}</strong> ({userRole})
+          <div className="welcome-text">
+            Welcome, <strong>{user?.name || "User"}</strong>
+          </div>
+
+          <button
+            className="bookings-btn"
+            onClick={() => navigate("/bookmarks")}
+          >
+            Bookmarks
+          </button>
+
+          <button
+            className="bookings-btn"
+            onClick={() => navigate("/bookings")}
+          >
+            Bookings
+          </button>
+
+          <div
+            className="profile-btn"
+            onClick={() => navigate("/profile")}
+            title="My Profile"
+          >
+            <img
+              src={`https://ui-avatars.com/api/?name=${
+                user?.name || "User"
+              }&background=2563eb&color=fff`}
+              alt="Profile"
+            />
+          </div>
         </div>
       </header>
 
       {/* ================= HERO ================= */}
       <section className="hero">
         <h1>
-          {isTutor
-            ? "Empower students, share your knowledge."
-            : "Inspire hope, ignite the imagination."}
+          Inspire hope, ignite <br /> the imagination.
         </h1>
 
-        <input
-          type="text"
-          placeholder={
-            isTutor
-              ? "Search students by name or need..."
-              : "Search tutors by name or skill..."
-          }
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Search tutors by name, skill, or course"
+            value={searchTerm}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearchError("");
 
-        {/* ✅ BUTTON GUARANTEED TO SHOW */}
-        {myInterests.length > 0 && (
+              if (value.length > MAX_SEARCH_LENGTH) {
+                setSearchError(
+                  `Search cannot exceed ${MAX_SEARCH_LENGTH} characters`
+                );
+                return;
+              }
+
+              if (/^[^a-zA-Z0-9\s]+$/.test(value)) {
+                setSearchError("Please enter letters or numbers");
+                return;
+              }
+
+              setSearchTerm(value);
+            }}
+          />
+          <button onClick={handleSearch}>Search</button>
+        </div>
+
+        {searchError && <p className="search-error">{searchError}</p>}
+
+        {/* ===== FILTER BUTTON (WILL SHOW) ===== */}
+        {helpNeeded.length > 0 && (
           <button
-            onClick={() => setFilterByMatching((prev) => !prev)}
-            className="filter-toggle-btn"
+            onClick={() => setFilterByHelpNeeded((prev) => !prev)}
             style={{
-              marginTop: "16px",
+              marginTop: "20px",
               padding: "10px 16px",
               borderRadius: "6px",
               border: "1px solid #2563eb",
-              background: filterByMatching ? "#2563eb" : "white",
-              color: filterByMatching ? "white" : "#2563eb",
+              background: filterByHelpNeeded ? "#2563eb" : "white",
+              color: filterByHelpNeeded ? "white" : "#2563eb",
               cursor: "pointer",
               fontWeight: "600",
             }}
           >
-            {filterByMatching
-              ? "Show All"
-              : isTutor
-              ? "Show Students I Can Help"
-              : "Show Tutors For My Needs"}
+            {filterByHelpNeeded
+              ? "Show All Tutors"
+              : "Show Tutors For My Subjects"}
           </button>
         )}
       </section>
 
-      {/* ================= RESULTS ================= */}
+      {/* ================= TUTORS ================= */}
       <section className="recommended">
+        <h2>Recommended Tutors</h2>
+        <p className="subtitle">
+          Connect with our student tutors who can help you learn faster!
+        </p>
+
         <div className="student-grid">
-          {filteredList.length === 0 ? (
-            <p>No results found</p>
+          {filteredTutors.length === 0 ? (
+            <p>No tutors match your criteria</p>
           ) : (
-            filteredList.map((person) => (
+            filteredTutors.map((tutor) => (
               <div
-                key={person._id}
                 className="student-card"
-                onClick={() =>
-                  navigate(
-                    isTutor
-                      ? `/student/${person._id}`
-                      : `/tutor/${person._id}`
-                  )
-                }
+                key={tutor._id}
+                onClick={() => navigate(`/tutor/${tutor._id}`)}
               >
-                <p className="student-name">{person.name}</p>
+                <div className="avatar"></div>
+
+                <p className="student-name">
+                  {tutor.name || "Unnamed Tutor"}
+                </p>
+
                 <p className="student-course">
-                  {person.course} — Year {person.year}
+                  {tutor.course || "Unknown Course"} — Year{" "}
+                  {tutor.year || "N/A"}
                 </p>
-                <p className="student-skills">
-                  {isTutor
-                    ? `Needs help in: ${person.helpNeeded?.join(", ")}`
-                    : `Skills: ${person.skills?.join(", ")}`}
-                </p>
+
+                {tutor.skills?.length > 0 && (
+                  <p className="student-skills">
+                    {tutor.skills.join(", ")}
+                  </p>
+                )}
               </div>
             ))
           )}
