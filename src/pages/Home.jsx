@@ -15,12 +15,12 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  // Get user data from localStorage
+  // Get user data and determine role
   const user = JSON.parse(localStorage.getItem("user"));
-  const userRole = user?.role || "student"; // Default to student if not found
+  const userRole = user?.role || "student"; 
   const isTutor = userRole === "tutor";
 
-  // Match logic: Tutors match with student needs, Students match with tutor skills
+  // Match logic: Tutors match skills to student needs, Students match needs to tutor skills
   const myInterests = isTutor ? user?.skills || [] : user?.helpNeeded || [];
 
   /* ================= AUTH CHECK ================= */
@@ -31,12 +31,12 @@ const Home = () => {
     }
   }, [navigate]);
 
-  /* ================= FETCH DATA (CONDITIONAL) ================= */
+  /* ================= FETCH DATA (ROLE-BASED) ================= */
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        // Switch endpoint based on who is logged in
+        // Tutors fetch students; Students fetch tutors
         const endpoint = isTutor ? "/students" : "/tutors";
         const res = await api.get(endpoint);
 
@@ -63,7 +63,7 @@ const Home = () => {
     const nameMatch = person.name?.toLowerCase().includes(trimmedTerm);
     const courseMatch = person.course?.toLowerCase().includes(trimmedTerm);
     
-    // Check skills (for tutors) or needsHelpIn (for students)
+    // Tutors search for student needs; Students search for tutor skills
     const subjects = isTutor ? person.needsHelpIn : person.skills;
     const subjectMatch = subjects?.some((s) => s.toLowerCase().includes(trimmedTerm));
 
@@ -71,7 +71,6 @@ const Home = () => {
 
     if (!filterByMatching) return matchesSearch;
 
-    // Filter by users who share my subjects
     return matchesSearch && subjects?.some((s) => myInterests.includes(s));
   });
 
@@ -165,6 +164,7 @@ const Home = () => {
               <div
                 className="student-card"
                 key={person._id}
+                // Redirects to student or tutor detail page based on role
                 onClick={() => navigate(isTutor ? `/student/${person._id}` : `/tutor/${person._id}`)}
               >
                 <div className="avatar">{person.name?.charAt(0)}</div>
