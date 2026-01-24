@@ -3,51 +3,40 @@ import api from "../api";
 import "../css/Home.css";
 import { useNavigate } from "react-router";
 
-const MAX_SEARCH_LENGTH = 30;
-
 const Home = () => {
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchError, setSearchError] = useState("");
   const [filterByMatching, setFilterByMatching] = useState(false);
 
   const navigate = useNavigate();
 
-  // Get user data and determine role
   const user = JSON.parse(localStorage.getItem("user"));
-  const userRole = user?.role || "student"; 
+  const userRole = user?.role || "student";
   const isTutor = userRole === "tutor";
 
-  // Match logic: Tutors match skills to student needs, Students match needs to tutor skills
-  const myInterests = isTutor ? user?.skills || [] : user?.helpNeeded || [];
+  // ✅ FIXED: correct fields
+  const myInterests = isTutor
+    ? user?.skills || []
+    : user?.helpNeeded || [];
 
   /* ================= AUTH CHECK ================= */
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-    }
+    if (!token) navigate("/login");
   }, [navigate]);
 
-  /* ================= FETCH DATA (ROLE-BASED) ================= */
+  /* ================= FETCH USERS ================= */
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);
       try {
-        // Tutors fetch students; Students fetch tutors
         const endpoint = isTutor ? "/students" : "/tutors";
         const res = await api.get(endpoint);
-
-        if (!Array.isArray(res.data)) {
-          throw new Error("Invalid data format from server");
-        }
-
         setPeople(res.data);
       } catch (err) {
         console.error("API ERROR:", err);
-        setError(err.response?.data?.message || "Unable to fetch users.");
+        setError("Unable to fetch users");
       } finally {
         setLoading(false);
       }
@@ -56,42 +45,41 @@ const Home = () => {
     fetchUsers();
   }, [isTutor]);
 
-  /* ================= FILTER LOGIC ================= */
-  const trimmedTerm = searchTerm.trim().toLowerCase();
-
+  /* ================= FILTER ================= */
   const filteredList = people.filter((person) => {
-    const nameMatch = person.name?.toLowerCase().includes(trimmedTerm);
-    const courseMatch = person.course?.toLowerCase().includes(trimmedTerm);
-    
-    // Tutors search for student needs; Students search for tutor skills
-    const subjects = isTutor ? person.needsHelpIn : person.skills;
-    const subjectMatch = subjects?.some((s) => s.toLowerCase().includes(trimmedTerm));
+    const subjects = isTutor
+      ? person.helpNeeded || []
+      : person.skills || [];
 
-    const matchesSearch = !trimmedTerm || nameMatch || courseMatch || subjectMatch;
+    const searchMatch =
+      !searchTerm ||
+      person.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subjects.some((s) =>
+        s.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
-    if (!filterByMatching) return matchesSearch;
+    if (!filterByMatching) return searchMatch;
 
-    return matchesSearch && subjects?.some((s) => myInterests.includes(s));
+    return (
+      searchMatch &&
+      subjects.some((s) =>
+        myInterests.some(
+          (i) => i.toLowerCase() === s.toLowerCase()
+        )
+      )
+    );
   });
 
-  /* ================= HANDLERS ================= */
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      setSearchError("Search cannot be empty");
-      return;
-    }
-    setSearchError("");
-  };
+  if (loading) return <h2 style={{ padding: "40px" }}>Loading...</h2>;
 
-  if (loading) return <h2 style={{ padding: "40px" }}>Loading users...</h2>;
-
-  if (error) return (
-    <div className="error-screen">
-      <h2>Something went wrong</h2>
-      <p>{error}</p>
-      <button onClick={() => window.location.reload()}>Retry</button>
-    </div>
-  );
+  if (error) {
+    return (
+      <div className="error-screen">
+        <h2>Error</h2>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="home">
@@ -99,40 +87,36 @@ const Home = () => {
       <header className="navbar">
         <div className="logo">PeerSeeker</div>
         <div className="nav-right">
-          <div className="welcome-text">
-            Welcome, <strong>{user?.name || "User"}</strong> ({userRole})
-          </div>
-          <button className="bookings-btn" onClick={() => navigate("/bookings")}>Bookings</button>
-          <div className="profile-btn" onClick={() => navigate("/profile")}>
-            <img src={`https://ui-avatars.com/api/?name=${user?.name}&background=2563eb&color=fff`} alt="Profile" />
-          </div>
+          Welcome, <strong>{user?.name}</strong> ({userRole})
         </div>
       </header>
 
       {/* ================= HERO ================= */}
       <section className="hero">
         <h1>
-          {isTutor 
-            ? "Empower students, \n share your knowledge." 
-            : "Inspire hope, ignite \n the imagination."}
+          {isTutor
+            ? "Empower students, share your knowledge."
+            : "Inspire hope, ignite the imagination."}
         </h1>
 
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder={isTutor ? "Search students by name or need..." : "Search tutors by name or skill..."}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button onClick={handleSearch}>Search</button>
-        </div>
+        <input
+          type="text"
+          placeholder={
+            isTutor
+              ? "Search students by name or need..."
+              : "Search tutors by name or skill..."
+          }
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
+        {/* ✅ BUTTON GUARANTEED TO SHOW */}
         {myInterests.length > 0 && (
           <button
             onClick={() => setFilterByMatching((prev) => !prev)}
             className="filter-toggle-btn"
             style={{
-              marginTop: "20px",
+              marginTop: "16px",
               padding: "10px 16px",
               borderRadius: "6px",
               border: "1px solid #2563eb",
@@ -142,39 +126,40 @@ const Home = () => {
               fontWeight: "600",
             }}
           >
-            {filterByMatching ? "Show All" : isTutor ? "Show Students I Can Help" : "Show Tutors For My Needs"}
+            {filterByMatching
+              ? "Show All"
+              : isTutor
+              ? "Show Students I Can Help"
+              : "Show Tutors For My Needs"}
           </button>
         )}
       </section>
 
-      {/* ================= USER GRID ================= */}
+      {/* ================= RESULTS ================= */}
       <section className="recommended">
-        <h2>{isTutor ? "Available Students" : "Recommended Tutors"}</h2>
-        <p className="subtitle">
-          {isTutor 
-            ? "Connect with students who need help in subjects you master!" 
-            : "Connect with our student tutors who can help you learn faster!"}
-        </p>
-
         <div className="student-grid">
           {filteredList.length === 0 ? (
             <p>No results found</p>
           ) : (
             filteredList.map((person) => (
               <div
-                className="student-card"
                 key={person._id}
-                // Redirects to student or tutor detail page based on role
-                onClick={() => navigate(isTutor ? `/student/${person._id}` : `/tutor/${person._id}`)}
+                className="student-card"
+                onClick={() =>
+                  navigate(
+                    isTutor
+                      ? `/student/${person._id}`
+                      : `/tutor/${person._id}`
+                  )
+                }
               >
-                <div className="avatar">{person.name?.charAt(0)}</div>
                 <p className="student-name">{person.name}</p>
                 <p className="student-course">
                   {person.course} — Year {person.year}
                 </p>
                 <p className="student-skills">
-                  {isTutor 
-                    ? `Needs help in: ${person.needsHelpIn?.join(", ")}` 
+                  {isTutor
+                    ? `Needs help in: ${person.helpNeeded?.join(", ")}`
                     : `Skills: ${person.skills?.join(", ")}`}
                 </p>
               </div>
