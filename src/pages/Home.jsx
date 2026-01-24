@@ -14,12 +14,16 @@ const Home = () => {
   const [filterByHelpNeeded, setFilterByHelpNeeded] = useState(false);
 
   const navigate = useNavigate();
+
   const user = JSON.parse(localStorage.getItem("user"));
+  const helpNeeded = user?.helpNeeded || [];
 
   /* ================= AUTH CHECK ================= */
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) navigate("/login");
+    if (!token) {
+      navigate("/login");
+    }
   }, [navigate]);
 
   /* ================= FETCH TUTORS ================= */
@@ -49,7 +53,6 @@ const Home = () => {
 
   /* ================= FILTER LOGIC ================= */
   const trimmedTerm = searchTerm.trim().toLowerCase();
-  const helpNeeded = (user?.helpNeeded || []).map((h) => h.toLowerCase());
 
   const filteredTutors = tutors.filter((tutor) => {
     const matchesSearch =
@@ -65,7 +68,7 @@ const Home = () => {
     return (
       matchesSearch &&
       tutor.skills?.some((skill) =>
-        helpNeeded.includes(skill.toLowerCase())
+        helpNeeded.includes(skill)
       )
     );
   });
@@ -79,7 +82,9 @@ const Home = () => {
     setSearchError("");
   };
 
-  if (loading) return <h2 style={{ padding: "40px" }}>Loading tutors...</h2>;
+  if (loading) {
+    return <h2 style={{ padding: "40px" }}>Loading tutors...</h2>;
+  }
 
   if (error) {
     return (
@@ -102,14 +107,24 @@ const Home = () => {
             Welcome, <strong>{user?.name || "User"}</strong>
           </div>
 
-          <button onClick={() => navigate("/bookmarks")}>Bookmarks</button>
-          <button className="bookings-btn" onClick={() => navigate("/bookings")}>
+          <button
+            className="bookings-btn"
+            onClick={() => navigate("/bookmarks")}
+          >
+            Bookmarks
+          </button>
+
+          <button
+            className="bookings-btn"
+            onClick={() => navigate("/bookings")}
+          >
             Bookings
           </button>
 
           <div
             className="profile-btn"
             onClick={() => navigate("/profile")}
+            title="My Profile"
           >
             <img
               src={`https://ui-avatars.com/api/?name=${
@@ -137,7 +152,14 @@ const Home = () => {
               setSearchError("");
 
               if (value.length > MAX_SEARCH_LENGTH) {
-                setSearchError(`Search cannot exceed ${MAX_SEARCH_LENGTH}`);
+                setSearchError(
+                  `Search cannot exceed ${MAX_SEARCH_LENGTH} characters`
+                );
+                return;
+              }
+
+              if (/^[^a-zA-Z0-9\s]+$/.test(value)) {
+                setSearchError("Please enter letters or numbers");
                 return;
               }
 
@@ -149,13 +171,20 @@ const Home = () => {
 
         {searchError && <p className="search-error">{searchError}</p>}
 
-        {/* ===== HELP NEEDED FILTER BUTTON ===== */}
-        {user?.helpNeeded?.length > 0 && (
+        {/* ===== FILTER BY HELP NEEDED BUTTON ===== */}
+        {helpNeeded.length > 0 && (
           <button
-            className={`filter-btn ${
-              filterByHelpNeeded ? "active" : ""
-            }`}
             onClick={() => setFilterByHelpNeeded((prev) => !prev)}
+            style={{
+              marginTop: "20px",
+              padding: "10px 16px",
+              borderRadius: "6px",
+              border: "1px solid #2563eb",
+              background: filterByHelpNeeded ? "#2563eb" : "white",
+              color: filterByHelpNeeded ? "white" : "#2563eb",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
           >
             {filterByHelpNeeded
               ? "Show All Tutors"
@@ -168,7 +197,7 @@ const Home = () => {
       <section className="recommended">
         <h2>Recommended Tutors</h2>
         <p className="subtitle">
-          Tutors matched to what you need help with
+          Connect with our student tutors who can help you learn faster!
         </p>
 
         <div className="student-grid">
@@ -183,10 +212,13 @@ const Home = () => {
               >
                 <div className="avatar"></div>
 
-                <p className="student-name">{tutor.name}</p>
+                <p className="student-name">
+                  {tutor.name || "Unnamed Tutor"}
+                </p>
 
                 <p className="student-course">
-                  {tutor.course} — Year {tutor.year}
+                  {tutor.course || "Unknown Course"} — Year{" "}
+                  {tutor.year || "N/A"}
                 </p>
 
                 {tutor.skills?.length > 0 && (
