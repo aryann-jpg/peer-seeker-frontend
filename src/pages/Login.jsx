@@ -20,31 +20,23 @@ const Login = () => {
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      const res = await api.post(
-        "/auth/login",
-        { email, password }
-      );
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
+      // ✅ IMPORTANT FIX
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.student));
+
       navigate("/");
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        "Login failed. Please check your credentials."
+          "Login failed. Please check your credentials."
       );
     } finally {
       setLoading(false);
@@ -57,9 +49,6 @@ const Login = () => {
         <div className="auth-logo">PeerSeeker</div>
 
         <h2>Welcome back</h2>
-        <p className="auth-subtitle">
-          Login to continue learning with peers
-        </p>
 
         {error && <div className="auth-error">{error}</div>}
 
