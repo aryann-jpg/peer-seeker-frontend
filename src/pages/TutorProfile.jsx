@@ -11,38 +11,38 @@ const TutorProfile = () => {
   const [tutor, setTutor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
-
-  // Booking modal state
   const [showBooking, setShowBooking] = useState(false);
   const [date, setDate] = useState("");
   const [duration, setDuration] = useState(60);
   const [message, setMessage] = useState("");
 
-  /* ================= FETCH TUTOR ================= */
   useEffect(() => {
     api
-      .get(`/students/${id}`)
+      .get(`/tutors/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((res) => {
         setTutor(res.data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [id]);
+  }, [id, token]);
 
-  /* ================= BOOKMARK ================= */
   const handleBookmark = async () => {
     if (!token) return navigate("/login");
 
-    await api.post(
-      `/bookmarks/${tutor._id}`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    setBookmarked(!bookmarked);
+    try {
+      await api.post(
+        `/bookmarks/${tutor._id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setBookmarked(!bookmarked);
+    } catch (err) {
+      alert("Failed to bookmark tutor");
+    }
   };
 
-  /* ================= CREATE BOOKING ================= */
   const handleCreateBooking = async () => {
     if (!date) return alert("Please select a date and time");
 
@@ -122,7 +122,7 @@ const TutorProfile = () => {
           )}
         </div>
       </div>
-      
+
       {showBooking && (
         <div className="modal-overlay">
           <div className="booking-modal">
@@ -152,9 +152,7 @@ const TutorProfile = () => {
             />
 
             <div className="modal-actions">
-              <button onClick={() => setShowBooking(false)}>
-                Cancel
-              </button>
+              <button onClick={() => setShowBooking(false)}>Cancel</button>
               <button className="confirm" onClick={handleCreateBooking}>
                 Confirm Booking
               </button>

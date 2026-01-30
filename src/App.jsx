@@ -8,6 +8,7 @@ import EditProfile from './pages/EditProfile.jsx';
 import Profile from './pages/Profile.jsx';
 import Bookmarks from './pages/Bookmarks.jsx';
 import Bookings from './pages/Bookings.jsx';
+import StudentProfile from './pages/StudentProfile.jsx';
 import './App.css';
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/profile" element={ <PrivateRoute> <Profile /> </PrivateRoute> } />
         <Route path="/bookmarks" element={ <PrivateRoute> <Bookmarks /> </PrivateRoute> } />
         <Route path="/bookings" element={ <PrivateRoute> <Bookings /> </PrivateRoute> } />
+        <Route path="/student/:id" element={<StudentProfile />} />
       </Routes>
     
     </>
