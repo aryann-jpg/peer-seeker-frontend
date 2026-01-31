@@ -20,17 +20,27 @@ const TutorProfile = () => {
 
   /* ================= FETCH TUTOR ================= */
   useEffect(() => {
-    const fetchTutor = async () => {
-      try {
-        const res = await api.get(`/tutors/${id}`);
-        setTutor(res.data);
+    const fetchTutorAndBookmarks = async () => {
+      if (!token || !user) {
+        navigate("/login");
+        return;
+      }
 
-        // Check if bookmarked
-        if (user?.role === "student") {
-          const bookmarks = await api.get("/bookmarks", {
+      try {
+        // 1️⃣ Fetch tutor
+        const resTutor = await api.get(`/tutors/${id}`);
+        setTutor(resTutor.data);
+
+        // 2️⃣ Fetch bookmarks if student
+        if (user.role === "student") {
+          const resBookmarks = await api.get("/bookmarks", {
             headers: { Authorization: `Bearer ${token}` },
           });
-          setBookmarked(bookmarks.data.some((b) => b._id === id));
+
+          const isBookmarked = resBookmarks.data.some(
+            (b) => b._id === resTutor.data._id
+          );
+          setBookmarked(isBookmarked);
         }
 
         setLoading(false);
@@ -40,17 +50,19 @@ const TutorProfile = () => {
       }
     };
 
-    fetchTutor();
-  }, [id, user, token]);
+    fetchTutorAndBookmarks();
+  }, [id, navigate, token, user]);
 
   /* ================= BOOKMARK ================= */
   const handleBookmark = async () => {
-    if (!user) return navigate("/login");
+    if (!user || !token) return navigate("/login");
 
     try {
       await api.post(`/bookmarks/${tutor._id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Toggle local state
       setBookmarked((prev) => !prev);
     } catch (err) {
       console.error("Bookmark error:", err.response?.data || err);
