@@ -6,7 +6,6 @@ import "../css/TutorProfile.css";
 const TutorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const [tutor, setTutor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,53 +15,56 @@ const TutorProfile = () => {
   const [duration, setDuration] = useState(60);
   const [message, setMessage] = useState("");
 
+  /* ================= FETCH TUTOR ================= */
+
   useEffect(() => {
     api
-      .get(`/tutors/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get(`/tutors/${id}`)
       .then((res) => {
         setTutor(res.data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
-  }, [id, token]);
+      .catch((err) => {
+        console.error("Failed to load tutor:", err);
+        setLoading(false);
+      });
+  }, [id]);
+
+  /* ================= BOOKMARK ================= */
 
   const handleBookmark = async () => {
+    const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
 
     try {
-      await api.post(
-        `/bookmarks/${tutor._id}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setBookmarked(!bookmarked);
+      await api.post(`/bookmarks/${tutor._id}`);
+      setBookmarked((prev) => !prev);
     } catch (err) {
+      console.error("Bookmark error:", err);
       alert("Failed to bookmark tutor");
     }
   };
+
+  /* ================= CREATE BOOKING ================= */
 
   const handleCreateBooking = async () => {
     if (!date) return alert("Please select a date and time");
 
     try {
-      await api.post(
-        "/bookings",
-        {
-          tutorId: tutor._id,
-          date,
-          duration,
-          message,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post("/bookings", {
+        tutor: tutor._id,              // ✅ FIXED
+        date,
+        duration: Number(duration),    // ✅ ensure number
+        message,
+      });
 
       alert("Booking created 🎉");
       setShowBooking(false);
       setDate("");
+      setDuration(60);
       setMessage("");
-    } catch {
+    } catch (err) {
+      console.error("Create booking error:", err.response?.data || err);
       alert("Failed to create booking");
     }
   };
@@ -82,10 +84,7 @@ const TutorProfile = () => {
             {bookmarked ? "★ Bookmarked" : "☆ Bookmark"}
           </button>
 
-          <button
-            className="book-btn"
-            onClick={() => setShowBooking(true)}
-          >
+          <button className="book-btn" onClick={() => setShowBooking(true)}>
             📅 Book Session
           </button>
         </div>
@@ -138,7 +137,7 @@ const TutorProfile = () => {
             <label>Duration</label>
             <select
               value={duration}
-              onChange={(e) => setDuration(e.target.value)}
+              onChange={(e) => setDuration(Number(e.target.value))}
             >
               <option value={30}>30 minutes</option>
               <option value={60}>60 minutes</option>
