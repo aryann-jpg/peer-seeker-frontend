@@ -16,7 +16,9 @@ const Bookmarks = () => {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await api.get("/bookings"); // Adjust if your route prefix is different
+        const res = await api.get("/bookmarks", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setTutors(res.data);
       } catch (err) {
         console.error("Failed to fetch bookmarks", err.response || err);
@@ -33,7 +35,9 @@ const Bookmarks = () => {
     if (!confirmed) return;
 
     try {
-      await api.post(`/bookings/${id}`); // toggle bookmark
+      await api.post(`/bookmarks/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setTutors((prev) => prev.filter((t) => t._id !== id));
     } catch (err) {
       console.error("Bookmark error:", err.response || err);
@@ -41,16 +45,12 @@ const Bookmarks = () => {
     }
   };
 
-  const viewProfile = (id) => {
-    navigate(`/tutor/${id}`);
-  };
+  const viewProfile = (id) => navigate(`/tutor/${id}`);
 
   return (
     <div className="bookmark-page">
       <div className="bookmark-header">
-        <button className="back-btn" onClick={() => navigate("/")}>
-          ← Back
-        </button>
+        <button className="back-btn" onClick={() => navigate("/")}>← Back</button>
         <h1>Bookmarked Tutors</h1>
       </div>
 
@@ -68,9 +68,7 @@ const Bookmarks = () => {
             <p className="skills">{tutor.skills?.join(", ") || "No skills listed"}</p>
 
             <button onClick={() => viewProfile(tutor._id)}>View Profile</button>
-            <button className="remove" onClick={() => removeBookmark(tutor._id)}>
-              Remove
-            </button>
+            <button className="remove" onClick={() => removeBookmark(tutor._id)}>Remove</button>
           </div>
         ))}
       </div>

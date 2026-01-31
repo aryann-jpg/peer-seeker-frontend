@@ -9,9 +9,9 @@ const Bookings = () => {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({ date: "", duration: "", message: "" });
   const [role, setRole] = useState("");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
     if (!token || !user) return navigate("/login");
 
@@ -20,20 +20,21 @@ const Bookings = () => {
     const fetchBookings = async () => {
       try {
         const endpoint = user.role === "tutor" ? "/bookings/tutor" : "/bookings/my";
-        const res = await api.get(endpoint);
+        const res = await api.get(endpoint, { headers: { Authorization: `Bearer ${token}` } });
         setBookings(res.data);
       } catch {
         alert("Failed to load bookings");
       }
     };
+
     fetchBookings();
-  }, [navigate]);
+  }, [navigate, token]);
 
   /* ================= STUDENT ACTIONS ================= */
   const deleteBooking = async (id) => {
     if (!window.confirm("Are you sure you want to cancel this booking?")) return;
     try {
-      await api.delete(`/bookings/${id}`);
+      await api.delete(`/bookings/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setBookings((prev) => prev.filter((b) => b._id !== id));
       alert("Booking cancelled");
     } catch {
@@ -52,7 +53,7 @@ const Bookings = () => {
 
   const saveUpdate = async (id) => {
     try {
-      const res = await api.put(`/bookings/${id}`, editData);
+      const res = await api.put(`/bookings/${id}`, editData, { headers: { Authorization: `Bearer ${token}` } });
       setBookings((prev) => prev.map((b) => (b._id === id ? res.data : b)));
       setEditingId(null);
       alert("Booking updated successfully!");
@@ -64,10 +65,8 @@ const Bookings = () => {
   /* ================= TUTOR ACTIONS ================= */
   const updateStatus = async (id, status) => {
     try {
-      await api.patch(`/bookings/${id}/status`, { status });
-
       const backendStatus = status === "accepted" ? "confirmed" : status === "rejected" ? "cancelled" : status;
-
+      await api.patch(`/bookings/${id}/status`, { status: backendStatus }, { headers: { Authorization: `Bearer ${token}` } });
       setBookings((prev) =>
         prev.map((b) => (b._id === id ? { ...b, status: backendStatus } : b))
       );
@@ -95,22 +94,11 @@ const Bookings = () => {
         editingId === b._id ? (
           <div className="edit-form">
             <label>Date & Time:</label>
-            <input
-              type="datetime-local"
-              value={editData.date}
-              onChange={(e) => setEditData({ ...editData, date: e.target.value })}
-            />
+            <input type="datetime-local" value={editData.date} onChange={(e) => setEditData({ ...editData, date: e.target.value })} />
             <label>Duration (mins):</label>
-            <input
-              type="number"
-              value={editData.duration}
-              onChange={(e) => setEditData({ ...editData, duration: e.target.value })}
-            />
+            <input type="number" value={editData.duration} onChange={(e) => setEditData({ ...editData, duration: e.target.value })} />
             <label>Message:</label>
-            <textarea
-              value={editData.message}
-              onChange={(e) => setEditData({ ...editData, message: e.target.value })}
-            />
+            <textarea value={editData.message} onChange={(e) => setEditData({ ...editData, message: e.target.value })} />
             <div className="edit-actions">
               <button onClick={() => saveUpdate(b._id)}>Save</button>
               <button onClick={() => setEditingId(null)}>Cancel</button>
