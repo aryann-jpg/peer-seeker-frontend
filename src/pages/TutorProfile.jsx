@@ -15,8 +15,9 @@ const TutorProfile = () => {
   const [duration, setDuration] = useState(60);
   const [message, setMessage] = useState("");
 
-  /* ================= FETCH TUTOR ================= */
+  const user = JSON.parse(localStorage.getItem("user"));
 
+  /* ================= FETCH TUTOR ================= */
   useEffect(() => {
     api
       .get(`/tutors/${id}`)
@@ -25,47 +26,43 @@ const TutorProfile = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to load tutor:", err);
+        console.error("Fetch tutor error:", err.response?.data);
         setLoading(false);
       });
   }, [id]);
 
   /* ================= BOOKMARK ================= */
-
   const handleBookmark = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return navigate("/login");
+    if (!user) return navigate("/login");
 
     try {
       await api.post(`/bookmarks/${tutor._id}`);
       setBookmarked((prev) => !prev);
     } catch (err) {
-      console.error("Bookmark error:", err);
+      console.error("Bookmark error:", err.response?.data);
       alert("Failed to bookmark tutor");
     }
   };
 
   /* ================= CREATE BOOKING ================= */
-
   const handleCreateBooking = async () => {
     if (!date) return alert("Please select a date and time");
 
     try {
       await api.post("/bookings", {
-        tutor: tutor._id,              // ✅ FIXED
+        tutorId: tutor._id,
         date,
-        duration: Number(duration),    // ✅ ensure number
+        duration,
         message,
       });
 
-      alert("Booking created 🎉");
+      alert("Booking request sent 🎉");
       setShowBooking(false);
       setDate("");
-      setDuration(60);
       setMessage("");
     } catch (err) {
-      console.error("Create booking error:", err.response?.data || err);
-      alert("Failed to create booking");
+      console.error("Create booking error:", err.response?.data);
+      alert(err.response?.data?.message || "Failed to create booking");
     }
   };
 
@@ -84,9 +81,11 @@ const TutorProfile = () => {
             {bookmarked ? "★ Bookmarked" : "☆ Bookmark"}
           </button>
 
-          <button className="book-btn" onClick={() => setShowBooking(true)}>
-            📅 Book Session
-          </button>
+          {user?.role === "student" && (
+            <button className="book-btn" onClick={() => setShowBooking(true)}>
+              📅 Book Session
+            </button>
+          )}
         </div>
 
         <div className="profile-card">
