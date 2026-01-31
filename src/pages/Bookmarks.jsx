@@ -16,32 +16,34 @@ const Bookmarks = () => {
 
     const fetchBookmarks = async () => {
       try {
-        const res = await api.get("/bookmarks");
+        const res = await api.get("/bookings"); // Adjust if your route prefix is different
         setTutors(res.data);
       } catch (err) {
-        console.error("Failed to fetch bookmarks");
+        console.error("Failed to fetch bookmarks", err.response || err);
       }
     };
 
     fetchBookmarks();
   }, [navigate, token]);
 
-const removeBookmark = async (id) => {
-  const confirmed = window.confirm(
-    "Are you sure you want to remove this tutor from your bookmarks?"
-  );
+  const removeBookmark = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to remove this tutor from your bookmarks?"
+    );
+    if (!confirmed) return;
 
-  if (!confirmed) return;
+    try {
+      await api.post(`/bookings/${id}`); // toggle bookmark
+      setTutors((prev) => prev.filter((t) => t._id !== id));
+    } catch (err) {
+      console.error("Bookmark error:", err.response || err);
+      alert("Failed to remove bookmark");
+    }
+  };
 
-  await api.post(`/bookmarks/${id}`);
-    `/bookmarks/${id}`,
-    {},
-    { headers: { Authorization: `Bearer ${token}` } }
-  
-
-  setTutors((prev) => prev.filter((t) => t._id !== id));
-};
-
+  const viewProfile = (id) => {
+    navigate(`/tutor/${id}`);
+  };
 
   return (
     <div className="bookmark-page">
@@ -49,36 +51,24 @@ const removeBookmark = async (id) => {
         <button className="back-btn" onClick={() => navigate("/")}>
           ← Back
         </button>
-        <h1> Bookmarked Tutors</h1>
+        <h1>Bookmarked Tutors</h1>
       </div>
 
-      {tutors.length === 0 && (
-        <p className="empty">No bookmarked tutors yet</p>
-      )}
+      {tutors.length === 0 && <p className="empty">No bookmarked tutors yet</p>}
 
       <div className="bookmark-grid">
         {tutors.map((tutor) => (
           <div key={tutor._id} className="bookmark-card">
             <img
-              src={`https://ui-avatars.com/api/?name=${tutor.name}`}
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.name)}`}
               alt={tutor.name}
             />
-
             <h3>{tutor.name}</h3>
-            <p>{tutor.course}</p>
+            <p>{tutor.course || "Course not specified"}</p>
+            <p className="skills">{tutor.skills?.join(", ") || "No skills listed"}</p>
 
-            <p className="skills">
-              {tutor.skills?.join(", ") || "No skills listed"}
-            </p>
-
-            <button onClick={() => navigate(`/tutor/${tutor._id}`)}>
-              View Profile
-            </button>
-
-            <button
-              className="remove"
-              onClick={() => removeBookmark(tutor._id)}
-            >
+            <button onClick={() => viewProfile(tutor._id)}>View Profile</button>
+            <button className="remove" onClick={() => removeBookmark(tutor._id)}>
               Remove
             </button>
           </div>
