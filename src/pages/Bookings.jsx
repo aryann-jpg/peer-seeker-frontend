@@ -7,36 +7,25 @@ const Bookings = () => {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({
-    date: "",
-    duration: "",
-    message: "",
-  });
+  const [editData, setEditData] = useState({ date: "", duration: "", message: "" });
   const [role, setRole] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!token || !user) {
-      navigate("/login");
-      return;
-    }
+    if (!token || !user) return navigate("/login");
 
     setRole(user.role);
 
     const fetchBookings = async () => {
       try {
-        const endpoint =
-          user.role === "tutor" ? "/bookings/tutor" : "/bookings/my";
+        const endpoint = user.role === "tutor" ? "/bookings/tutor" : "/bookings/my";
         const res = await api.get(endpoint);
         setBookings(res.data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         alert("Failed to load bookings");
       }
     };
-
     fetchBookings();
   }, [navigate]);
 
@@ -65,9 +54,7 @@ const Bookings = () => {
   const saveUpdate = async (id) => {
     try {
       const res = await api.put(`/bookings/${id}`, editData);
-      setBookings((prev) =>
-        prev.map((b) => (b._id === id ? res.data : b))
-      );
+      setBookings((prev) => prev.map((b) => (b._id === id ? res.data : b)));
       setEditingId(null);
       alert("Booking updated successfully!");
     } catch {
@@ -75,17 +62,16 @@ const Bookings = () => {
     }
   };
 
-  /* ================= TUTOR ACTIONS (FIXED) ================= */
+  /* ================= TUTOR ACTIONS ================= */
 
   const updateStatus = async (id, status) => {
     try {
-      await api.put(`/bookings/${id}/status`, { status });
+      await api.patch(`/bookings/${id}/status`, { status });
 
-      // Update UI even if backend doesn't return updated booking
+      const backendStatus = status === "accepted" ? "confirmed" : status === "rejected" ? "cancelled" : status;
+
       setBookings((prev) =>
-        prev.map((b) =>
-          b._id === id ? { ...b, status } : b
-        )
+        prev.map((b) => (b._id === id ? { ...b, status: backendStatus } : b))
       );
     } catch (err) {
       console.error("Update status failed:", err.response || err);
@@ -96,9 +82,7 @@ const Bookings = () => {
   return (
     <div className="booking-page">
       <div className="booking-header">
-        <button onClick={() => navigate("/")} className="back-btn">
-          ← Back
-        </button>
+        <button onClick={() => navigate("/")} className="back-btn">← Back</button>
         <h1>{role === "tutor" ? "Booking Requests" : "My Bookings"}</h1>
       </div>
 
@@ -108,25 +92,12 @@ const Bookings = () => {
         <div className="booking-list">
           {bookings.map((b) => (
             <div key={b._id} className="booking-card">
-              <h3>
-                {role === "tutor"
-                  ? b.student?.name || "Student"
-                  : b.tutor?.name || "Tutor"}
-              </h3>
-
-              {role === "student" && (
-                <p className="tutor-course">{b.tutor?.course}</p>
-              )}
-
+              <h3>{role === "tutor" ? b.student?.name || "Student" : b.tutor?.name || "Tutor"}</h3>
+              {role === "student" && <p className="tutor-course">{b.tutor?.course}</p>}
               <p><strong>Date:</strong> {new Date(b.date).toLocaleString()}</p>
               <p><strong>Duration:</strong> {b.duration} minutes</p>
               <p><strong>Status:</strong> {b.status}</p>
-
-              {b.message && (
-                <p className="message">
-                  <strong>Message:</strong> {b.message}
-                </p>
-              )}
+              {b.message && <p className="message"><strong>Message:</strong> {b.message}</p>}
 
               {/* STUDENT VIEW */}
               {role === "student" && b.status === "pending" && (
@@ -136,28 +107,19 @@ const Bookings = () => {
                     <input
                       type="datetime-local"
                       value={editData.date}
-                      onChange={(e) =>
-                        setEditData({ ...editData, date: e.target.value })
-                      }
+                      onChange={(e) => setEditData({ ...editData, date: e.target.value })}
                     />
-
                     <label>Duration (mins):</label>
                     <input
                       type="number"
                       value={editData.duration}
-                      onChange={(e) =>
-                        setEditData({ ...editData, duration: e.target.value })
-                      }
+                      onChange={(e) => setEditData({ ...editData, duration: e.target.value })}
                     />
-
                     <label>Message:</label>
                     <textarea
                       value={editData.message}
-                      onChange={(e) =>
-                        setEditData({ ...editData, message: e.target.value })
-                      }
+                      onChange={(e) => setEditData({ ...editData, message: e.target.value })}
                     />
-
                     <div className="edit-actions">
                       <button onClick={() => saveUpdate(b._id)}>Save</button>
                       <button onClick={() => setEditingId(null)}>Cancel</button>
@@ -166,25 +128,16 @@ const Bookings = () => {
                 ) : (
                   <>
                     <button onClick={() => startEdit(b)}>Edit Booking</button>
-                    <button
-                      className="cancel"
-                      onClick={() => deleteBooking(b._id)}
-                    >
-                      Cancel Booking
-                    </button>
+                    <button className="cancel" onClick={() => deleteBooking(b._id)}>Cancel Booking</button>
                   </>
                 )
               )}
 
-              {/* TUTOR VIEW (FIXED STATUS VALUES) */}
+              {/* TUTOR VIEW */}
               {role === "tutor" && b.status === "pending" && (
                 <div className="tutor-actions">
-                  <button onClick={() => updateStatus(b._id, "accepted")}>
-                    Accept
-                  </button>
-                  <button onClick={() => updateStatus(b._id, "rejected")}>
-                    Reject
-                  </button>
+                  <button onClick={() => updateStatus(b._id, "accepted")}>Accept</button>
+                  <button onClick={() => updateStatus(b._id, "rejected")}>Reject</button>
                 </div>
               )}
             </div>
