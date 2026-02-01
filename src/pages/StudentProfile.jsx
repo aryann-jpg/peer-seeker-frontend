@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import api from "../api";
-import "../css/TutorProfile.css"; // reuse styles
+import Loading from "./Loading";
+import "../css/TutorProfile.css";
 
 const StudentProfile = () => {
   const { id } = useParams();
@@ -19,27 +20,23 @@ const StudentProfile = () => {
       })
       .then((res) => {
         setStudent(res.data);
-        setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [id, token]);
 
   const handleBookmark = async () => {
     if (!token) return navigate("/login");
 
     try {
-      await api.post(
-        `/bookmarks/${student._id}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setBookmarked(!bookmarked);
-    } catch (err) {
+      await api.post(`/bookmarks/${student._id}`);
+      setBookmarked((prev) => !prev);
+    } catch {
       alert("Failed to bookmark student");
     }
   };
 
-  if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
+  if (loading) return <Loading text="Loading student profile..." />;
   if (!student) return <p style={{ padding: 40 }}>Student not found</p>;
 
   return (
@@ -63,7 +60,6 @@ const StudentProfile = () => {
           />
 
           <h1>{student.name}</h1>
-
           <p className="profile-course">
             {student.course} — Year {student.year}
           </p>

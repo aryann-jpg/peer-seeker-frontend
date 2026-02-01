@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router";
+import Loading from "./Loading";
 import "../css/Bookmarks.css";
 
 const Bookmarks = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
   const [tutors, setTutors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    if (!token) return navigate("/login");
 
     const fetchBookmarks = async () => {
       try {
@@ -20,55 +20,48 @@ const Bookmarks = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTutors(res.data);
-      } catch (err) {
-        console.error("Failed to fetch bookmarks", err.response || err);
+      } catch {
+        alert("Failed to load bookmarks");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchBookmarks();
   }, [navigate, token]);
 
-  const removeBookmark = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to remove this tutor from your bookmarks?"
-    );
-    if (!confirmed) return;
+  if (loading) return <Loading text="Loading bookmarks..." />;
 
+  const removeBookmark = async (id) => {
     try {
-      await api.post(`/bookmarks/${id}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.post(
+        `/bookmarks/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setTutors((prev) => prev.filter((t) => t._id !== id));
-    } catch (err) {
-      console.error("Bookmark error:", err.response || err);
+    } catch {
       alert("Failed to remove bookmark");
     }
   };
 
-  const viewProfile = (id) => navigate(`/tutor/${id}`);
-
   return (
     <div className="bookmark-page">
-      <div className="bookmark-header">
-        <button className="back-btn" onClick={() => navigate("/")}>← Back</button>
-        <h1>Bookmarked Tutors</h1>
-      </div>
+      <button onClick={() => navigate("/")}>← Back</button>
 
-      {tutors.length === 0 && <p className="empty">No bookmarked tutors yet</p>}
+      {tutors.length === 0 && <p>No bookmarked tutors</p>}
 
       <div className="bookmark-grid">
         {tutors.map((tutor) => (
           <div key={tutor._id} className="bookmark-card">
-            <img
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.name)}`}
-              alt={tutor.name}
-            />
             <h3>{tutor.name}</h3>
-            <p>{tutor.course || "Course not specified"}</p>
-            <p className="skills">{tutor.skills?.join(", ") || "No skills listed"}</p>
-
-            <button onClick={() => viewProfile(tutor._id)}>View Profile</button>
-            <button className="remove" onClick={() => removeBookmark(tutor._id)}>Remove</button>
+            <p>{tutor.course}</p>
+            <button onClick={() => navigate(`/tutor/${tutor._id}`)}>
+              View Profile
+            </button>
+            <button className="remove" onClick={() => removeBookmark(tutor._id)}>
+              Remove
+            </button>
           </div>
         ))}
       </div>

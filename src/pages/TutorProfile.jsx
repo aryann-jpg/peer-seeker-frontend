@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import api from "../api";
+import Loading from "./Loading";
 import "../css/TutorProfile.css";
 
 const TutorProfile = () => {
@@ -17,6 +18,34 @@ const TutorProfile = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!token || !user) return navigate("/login");
+
+      try {
+        const tutorRes = await api.get(`/tutors/${id}`);
+        setTutor(tutorRes.data);
+
+        if (user.role === "student") {
+          const bookmarksRes = await api.get("/bookmarks");
+          setBookmarked(
+            bookmarksRes.data.some((b) => b._id === tutorRes.data._id)
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, navigate, token, user]);
+
+  if (loading) return <Loading text="Loading tutor profile..." />;
+  if (!tutor) return <p style={{ padding: 40 }}>Tutor not found</p>;
+
 
   /* ================= FETCH TUTOR ================= */
   useEffect(() => {
