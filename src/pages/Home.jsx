@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import api from "../api";
 import "../css/Home.css";
 import { useNavigate } from "react-router";
-import Loading from "./Loading";
 
 const MAX_SEARCH_LENGTH = 30;
 
@@ -73,7 +72,10 @@ const Home = () => {
 
     if (!filterByMatch) return matchesSearch;
 
-    return matchesSearch && subjects.some((s) => mySubjects.includes(s));
+    return (
+      matchesSearch &&
+      subjects.some((s) => mySubjects.includes(s))
+    );
   });
 
   /* ================= HANDLERS ================= */
@@ -85,12 +87,11 @@ const Home = () => {
     setSearchError("");
   };
 
-  /* ================= LOADING & ERROR ================= */
   if (loading) {
     return (
-      <Loading
-        text={`Loading ${isTutor ? "students" : "tutors"}...`}
-      />
+      <h2 style={{ padding: "40px" }}>
+        Loading {isTutor ? "students" : "tutors"}...
+      </h2>
     );
   }
 
